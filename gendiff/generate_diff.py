@@ -1,6 +1,12 @@
 import json
 
 
+def convert_bool_to_string(value):
+    if isinstance(value, bool):
+        return str(value).lower()
+    return value
+
+
 def generate_diff(file1, file2):
 
     with open(file1, 'r') as file1, open(file2, 'r') as file2:
@@ -14,6 +20,9 @@ def generate_diff(file1, file2):
         for key in sorted(keys_union):
             value1 = file1_data.get(key)
             value2 = file2_data.get(key)
+
+            value1 = convert_bool_to_string(value1)
+            value2 = convert_bool_to_string(value2)
 
             if value1 == value2:
                 diff[f'  {key}'] = value1
@@ -30,4 +39,3 @@ def generate_diff(file1, file2):
             output += f'  {k}: {v}\n'
         output += '}'
         return output
-
