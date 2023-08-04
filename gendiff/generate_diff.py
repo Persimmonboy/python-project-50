@@ -36,6 +36,6 @@ def generate_diff(file1, file2):
 
         output = '{\n'
         for k, v in diff.items():
-            output += f'  {k}: {v}\n'
-        output += '}'
+            output += f'    {k}: {v}\n'
+        output += '  }'
         return output
