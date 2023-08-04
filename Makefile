@@ -28,3 +28,6 @@ patch:
 	python -m pip install --user dist/hexlet_code-0.1.0-py3-none-any.whl --force-reinstall
 
 .PHONY: install test lint selfcheck check build
+
+pip:
+	python -m pip install .
