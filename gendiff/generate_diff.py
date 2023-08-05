@@ -1,39 +1,38 @@
 from gendiff.parser import parse_file
 
-
 def convert_bool_to_string(value):
     if isinstance(value, bool):
         return str(value).lower()
     return value
 
-
 def generate_diff(file1, file2):
-
     file1_data = parse_file(file1)
     file2_data = parse_file(file2)
 
-    diff = {}
-    keys_union = set(file1_data.keys()) | set(file2_data.keys())
+    def build_diff(data1, data2):
+        keys = sorted(data1.keys() | data2.keys())
+        diff = {}
 
-    for key in sorted(keys_union):
-        value1 = file1_data.get(key)
-        value2 = file2_data.get(key)
+        for key in keys:
+            # Получаем значения для ключа в обоих файлах
+            value1 = data1.get(key)
+            value2 = data2.get(key)
 
-        value1 = convert_bool_to_string(value1)
-        value2 = convert_bool_to_string(value2)
+            # Конвертируем булевы значения в строки
+            value1 = convert_bool_to_string(value1)
+            value2 = convert_bool_to_string(value2)
 
-        if value1 == value2:
-            diff[f'  {key}'] = value1
-        elif value1 is None:
-            diff[f'+ {key}'] = value2
-        elif value2 is None:
-            diff[f'- {key}'] = value1
-        else:
-            diff[f'- {key}'] = value1
-            diff[f'+ {key}'] = value2
+            if key in data1 and key not in data2:
+                diff[key] = {'type': 'removed', 'value': value1}
+            elif key not in data1 and key in data2:
+                diff[key] = {'type': 'added', 'value': value2}
+            elif isinstance(value1, dict) and isinstance(value2, dict):
+                diff[key] = {'type': 'nested', 'children': build_diff(value1, value2)}
+            elif value1 == value2:
+                diff[key] = {'type': 'unchanged', 'value': value1}
+            else:
+                diff[key] = {'type': 'changed', 'old_value': value1, 'new_value': value2}
 
-    output = '{\n'
-    for k, v in diff.items():
-        output += f'    {k}: {v}\n'
-    output += '  }'
-    return output
+        return diff
+
+    return build_diff(file1_data, file2_data)

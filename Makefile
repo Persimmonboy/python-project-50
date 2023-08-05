@@ -2,7 +2,7 @@ install:
 	poetry install
 
 test:
-	poetry run pytest
+	poetry run pytest -s
 
 run:
 	poetry run gendiff --help
@@ -25,9 +25,9 @@ patch:
 	poetry install
 	poetry build
 	poetry publish --dry-run --username ' ' --password ' '
-	python -m pip install --user dist/hexlet_code-0.1.0-py3-none-any.whl --force-reinstall
+	python3 -m pip install --user dist/hexlet_code-0.1.0-py3-none-any.whl --force-reinstall
 
 .PHONY: install test lint selfcheck check build
 
 pip:
-	python -m pip install .
+	python3 -m pip install .

@@ -8,12 +8,14 @@ def get_file_extension(filepath):
 
 def read_file_content(filepath):
     with open(filepath, 'r') as file:
-        content = file.read()
-    return content
+        return file.read()
 
 def parse_file(filepath):
     extension = get_file_extension(filepath)
     content = read_file_content(filepath)
+
+    if not content: 
+        return {} 
 
     if extension == 'json':
         return json.loads(content)

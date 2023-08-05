@@ -1,12 +1,4 @@
-from gendiff import cli
-from gendiff.generate_diff import generate_diff
-
-
-def main():
-    args = cli.parse_args()
-    diff = generate_diff(args.file1, args.file2)
-    print(diff)
-
+from gendiff.cli import main
 
 if __name__ == "__main__":
     main()
