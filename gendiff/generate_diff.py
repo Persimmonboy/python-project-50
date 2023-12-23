@@ -1,9 +1,51 @@
 from gendiff.parser import parse_file
 
+
 def convert_bool_to_string(value):
     if isinstance(value, bool):
         return str(value).lower()
     return value
+
+
+def handle_added(key, value2):
+    return {'type': 'added', 'value': convert_bool_to_string(value2)}
+
+
+def handle_removed(key, value1):
+    return {'type': 'removed', 'value': convert_bool_to_string(value1)}
+
+
+def handle_changed(key, value1, value2):
+    return {
+        'type': 'changed',
+        'old_value': convert_bool_to_string(value1),
+        'new_value': convert_bool_to_string(value2)
+    }
+
+
+def handle_nested(key, value1, value2, build_diff_func):
+    return {
+        'type': 'nested',
+        'children': build_diff_func(value1, value2)
+    }
+
+
+def handle_unchanged(key, value1):
+    return {'type': 'unchanged', 'value': convert_bool_to_string(value1)}
+
+
+def determine_change(key, value1, value2, data1, data2, build_diff_func):
+    if key in data1 and key not in data2:
+        return handle_removed(key, value1)
+    elif key not in data1 and key in data2:
+        return handle_added(key, value2)
+    elif isinstance(value1, dict) and isinstance(value2, dict):
+        return handle_nested(key, value1, value2, build_diff_func)
+    elif value1 == value2:
+        return handle_unchanged(key, value1)
+    else:
+        return handle_changed(key, value1, value2)
+
 
 def generate_diff(file1, file2):
     file1_data = parse_file(file1)
@@ -14,24 +56,11 @@ def generate_diff(file1, file2):
         diff = {}
 
         for key in keys:
-            # Получаем значения для ключа в обоих файлах
             value1 = data1.get(key)
             value2 = data2.get(key)
-
-            # Конвертируем булевы значения в строки
-            value1 = convert_bool_to_string(value1)
-            value2 = convert_bool_to_string(value2)
-
-            if key in data1 and key not in data2:
-                diff[key] = {'type': 'removed', 'value': value1}
-            elif key not in data1 and key in data2:
-                diff[key] = {'type': 'added', 'value': value2}
-            elif isinstance(value1, dict) and isinstance(value2, dict):
-                diff[key] = {'type': 'nested', 'children': build_diff(value1, value2)}
-            elif value1 == value2:
-                diff[key] = {'type': 'unchanged', 'value': value1}
-            else:
-                diff[key] = {'type': 'changed', 'old_value': value1, 'new_value': value2}
+            diff[key] = determine_change(
+                key, value1, value2, data1, data2, build_diff
+            )
 
         return diff
 
